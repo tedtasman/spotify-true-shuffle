@@ -1,95 +1,74 @@
 import Client from '../PRIVATE-config.json';
-import axios from 'axios';
+import { useState } from 'react';
 
 const clientId = Client.ID;
 const params = new URLSearchParams(window.location.search);
 const code = params.get("code");
-const globalToken = undefined;
 
-const getToken = async () => {
-    try {
-        const credentials = btoa(Client.ID + ':' + Client.Secret);
-        const response = await axios.post('https://accounts.spotify.com/api/token', 
-            'grant_type=client_credentials', {
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Authorization': 'Basic ' + credentials
-        }
-    });
 
-        // Store the token in the global variable
-        globalToken = response.data.access_token; // Assuming the token is in response.data.access_token
-        console.log('Token fetched and stored:', globalToken);
-    } catch (error) {
-        console.error('Error fetching token:', error);
+
+
+export default function Connect() {
+    const [active, setActive] = useState(false);
+
+    const handleClick = () => {
+        setActive(!active);
+        loadProfile();
     }
-};
-
-
-const useToken = () => {
-    if (globalToken) {
-        console.log('Using token:', globalToken);
-        // Use the token for some API call or another purpose
-        getPlaylists();
-
-    } else {
-        console.log('Token not available, fetching token...');
-        getToken().then(() => {
-            console.log('Token fetched, now using token:', globalToken);
-            // Use the token after fetching
-        });
+    console.log("active: ", active);
+    if (!code) {
+        return (<button onClick={authenticate}>Authenticate</button>)
     }
-};
-
-
-const getPlaylists = async () => {
-    try {
-        const response = await axios.get('https://api.spotify.com/v1/me/playlists', {
-            headers: {
-                'Authorization': 'Bearer ' + btoa(globalToken)
-            }
-    });
-
-        console.log('Playlists:', response.data);
-    
-    } catch (error) {
-        console.error('Error fetching playlists:', error);
+    else if (!active) {
+        return (<button onClick={handleClick}>Begin</button>)
+    }
+    else {
+        return (
+            <>
+                <section id="profileInfo">
+                <h2>Logged in as <span id="displayName"></span></h2>
+                <span id="avatar"></span>
+                <ul>
+                    <li>User ID: <span id="id"></span></li>
+                    <li>Email: <span id="email"></span></li>
+                    <li>Spotify URI: <a id="uri" href="#"></a></li>
+                    <li>Link: <a id="url" href="#"></a></li>
+                    <li>Profile Image: <span id="imgUrl"></span></li>
+                </ul>
+                </section>
+            </>
+        )
     }
 }
 
 
-export default function connect() {
-    return (
-        <>
-            <button onClick={getToken}>Get Token</button>
-            <button onClick={authenticate}>Get Playlists</button>
-            <section id="profileInfo">
-            <h2>Logged in as <span id="displayName"></span></h2>
-            <span id="avatar"></span>
-            <ul>
-                <li>User ID: <span id="id"></span></li>
-                <li>Email: <span id="email"></span></li>
-                <li>Spotify URI: <a id="uri" href="#"></a></li>
-                <li>Link: <a id="url" href="#"></a></li>
-                <li>Profile Image: <span id="imgUrl"></span></li>
-            </ul>
-            </section>
-        </>
-    );
-}
 
 
+function authenticate() {
 
-async function authenticate() {
+    // If there is no code in the URL, redirect to the Spotify Accounts service
     if (!code) {
         redirectToAuthCodeFlow(clientId);
-    } else {
-        const accessToken = await getAccessToken(clientId, code);
-        const profile = await fetchProfile(accessToken);
-        console.log("Profile:", profile.display_name);
-        populateUI(profile);
     }
+    
 }
+
+async function loadProfile() {
+
+    // initialize variables
+    let accessToken = await getAccessToken(clientId, code);
+    let profile = await fetchProfile(accessToken);
+
+    // loop until we have a profile
+    console.log(profile);
+    while (!profile.display_name) {
+        redirectToAuthCodeFlow(clientId);
+        accessToken = await getAccessToken(clientId, code);
+        profile = await fetchProfile(accessToken);
+    }
+    populateUI(profile);
+}
+
 
 async function redirectToAuthCodeFlow(clientId) {
     const verifier = generateCodeVerifier(128);
@@ -106,6 +85,7 @@ async function redirectToAuthCodeFlow(clientId) {
     params.append("code_challenge", challenge);
 
     document.location = `https://accounts.spotify.com/authorize?${params.toString()}`;
+
 }
 
 function generateCodeVerifier(length) {
