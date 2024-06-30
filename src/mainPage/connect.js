@@ -9,19 +9,26 @@ const code = params.get("code");
 
 
 export default function Connect() {
+    // state to track if the user has clicked the "Begin" button
     const [active, setActive] = useState(false);
 
-    const handleClick = () => {
+    // event handler for the "Begin" button
+    const handleBegin = () => {
         setActive(!active);
         loadProfile();
     }
-    console.log("active: ", active);
+
+    // render the authentication button if there is no code in the URL
     if (!code) {
         return (<button onClick={authenticate}>Authenticate</button>)
     }
+
+    // render the "Begin" button if there is a code in the URL but the user has not clicked "Begin"
     else if (!active) {
-        return (<button onClick={handleClick}>Begin</button>)
+        return (<button onClick={handleBegin}>Begin</button>)
     }
+
+    // render the profile information if the user has clicked "Begin"
     else {
         return (
             <>
@@ -36,14 +43,15 @@ export default function Connect() {
                     <li>Profile Image: <span id="imgUrl"></span></li>
                 </ul>
                 </section>
+                <button onClick={fetchPlaylists}>Fetch Playlists</button>
+                <ul id="playlists"></ul>
             </>
         )
     }
 }
 
 
-
-
+// Function to authenticate the user
 function authenticate() {
 
     // If there is no code in the URL, redirect to the Spotify Accounts service
@@ -53,6 +61,8 @@ function authenticate() {
     
 }
 
+
+// Function to load the user's profile information
 async function loadProfile() {
 
     // initialize variables
@@ -64,12 +74,13 @@ async function loadProfile() {
     while (!profile.display_name) {
         redirectToAuthCodeFlow(clientId);
         accessToken = await getAccessToken(clientId, code);
-        profile = await fetchProfile(accessToken);
+        profile = await fetchProfile();
     }
     populateUI(profile);
 }
 
 
+// Function to redirect to the Spotify Accounts service
 async function redirectToAuthCodeFlow(clientId) {
     const verifier = generateCodeVerifier(128);
     const challenge = await generateCodeChallenge(verifier);
@@ -88,6 +99,8 @@ async function redirectToAuthCodeFlow(clientId) {
 
 }
 
+
+// Function to generate a code verifier
 function generateCodeVerifier(length) {
     let text = '';
     let possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -98,6 +111,8 @@ function generateCodeVerifier(length) {
     return text;
 }
 
+
+// Function to generate a code challenge
 async function generateCodeChallenge(codeVerifier) {
     const data = new TextEncoder().encode(codeVerifier);
     const digest = await window.crypto.subtle.digest('SHA-256', data);
@@ -108,9 +123,13 @@ async function generateCodeChallenge(codeVerifier) {
 }
 
 
+// Function to get an access token
 async function getAccessToken(clientId, code) {
+
+    // get the code verifier from local storage
     const verifier = localStorage.getItem("verifier");
 
+    // create the request parameters
     const params = new URLSearchParams();
     params.append("client_id", clientId);
     params.append("grant_type", "authorization_code");
@@ -118,18 +137,23 @@ async function getAccessToken(clientId, code) {
     params.append("redirect_uri", "http://localhost:3000/callback");
     params.append("code_verifier", verifier);
 
+    // make the request
     const result = await fetch("https://accounts.spotify.com/api/token", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: params
     });
 
+    // return and store the access token
     const { access_token } = await result.json();
+    localStorage.setItem("token", access_token);
     return access_token;
 }
 
 
-async function fetchProfile(token) {
+// Function to fetch the user's profile information
+async function fetchProfile() {
+    const token = localStorage.getItem("token");
     const result = await fetch("https://api.spotify.com/v1/me", {
         method: "GET", headers: { Authorization: `Bearer ${token}` }
     });
@@ -137,6 +161,56 @@ async function fetchProfile(token) {
     return await result.json();
 }
 
+
+// Function to fetch the user's playlists
+async function fetchPlaylists() {
+
+    
+
+    // get the user's playlists
+    const token = localStorage.getItem("token");
+    const result = await fetch("https://api.spotify.com/v1/me/playlists", {
+        method: "GET", headers: { Authorization: `Bearer ${token}` }
+    });
+
+    // parse the playlists and return them as an array with the name and ID
+    const playlistsObject = await result.json();
+    const playlists = [];
+    for (let playlist of playlistsObject.items) {
+        playlists.push([playlist.name, playlist.id]);
+    }
+
+    const playlistContainer = document.getElementById('playlists');
+    playlistContainer.innerHTML = '';
+
+    // Dynamically add items to the list
+    playlists.forEach(playlist => {
+        // Create the list item
+        const playlistEntry = document.createElement('li');
+
+        // Create the radio button
+        const radioButton = document.createElement('input');
+        radioButton.setAttribute('type', 'radio');
+        radioButton.setAttribute('name', 'playlist');
+        radioButton.setAttribute('value', playlist[0]);
+        radioButton.setAttribute('id', `playlist-${playlist[0]}`);
+
+        // Create a label for the radio button
+        const label = document.createElement('label');
+        label.setAttribute('for', `playlist-${playlist[0]}`);
+        label.textContent = playlist[0];
+
+        // Append the radio button and label to the list item
+        playlistEntry.appendChild(radioButton);
+        playlistEntry.appendChild(label);
+
+        // Append the list item to the playlist container
+        playlistContainer.appendChild(playlistEntry);
+    });
+}
+
+
+// Function to populate the UI with the user's profile information
 function populateUI(profile) {
     try {
         document.getElementById("displayName").innerText = profile.display_name;
