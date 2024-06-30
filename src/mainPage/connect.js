@@ -11,41 +11,46 @@ const code = params.get("code");
 export default function Connect() {
     // state to track if the user has clicked the "Begin" button
     const [active, setActive] = useState(false);
-
+    
     // event handler for the "Begin" button
     const handleBegin = () => {
         setActive(!active);
         loadProfile();
     }
 
+    const [playlistsLoaded, setPlaylistsLoaded] = useState(false);
+    const handlePlaylists = () => {
+        setPlaylistsLoaded(!playlistsLoaded);
+        fetchPlaylists();
+    }
+
     // render the authentication button if there is no code in the URL
     if (!code) {
-        return (<button onClick={authenticate}>Authenticate</button>)
+        return (<button onClick={authenticate} className='Action-button'>Authenticate</button>)
     }
 
     // render the "Begin" button if there is a code in the URL but the user has not clicked "Begin"
     else if (!active) {
-        return (<button onClick={handleBegin}>Begin</button>)
+        return (<button onClick={handleBegin} className='Action-button'>Begin</button>)
     }
 
     // render the profile information if the user has clicked "Begin"
     else {
         return (
-            <>
-                <section id="profileInfo">
-                <h2>Logged in as <span id="displayName"></span></h2>
-                <span id="avatar"></span>
-                <ul>
-                    <li>User ID: <span id="id"></span></li>
-                    <li>Email: <span id="email"></span></li>
-                    <li>Spotify URI: <a id="uri" href="#"></a></li>
-                    <li>Link: <a id="url" href="#"></a></li>
-                    <li>Profile Image: <span id="imgUrl"></span></li>
-                </ul>
-                </section>
-                <button onClick={fetchPlaylists}>Fetch Playlists</button>
-                <ul id="playlists"></ul>
-            </>
+            <div className='Body-container'>
+                <div id="profileInfo" className='Profile'>
+                    <h2>Logged in as <span id="displayName" style={{color:'#a2d5f5'}}></span></h2>
+                    <span id="avatar" className='.Avatar'></span>
+                </div>
+                {playlistsLoaded ? 
+                <div className='Playlists-container'>
+                    <h2>Select a playlist to shuffle:</h2>
+                    <ul id="playlists" className='Playlists-list'></ul>
+                </div>
+                : null}
+                {!playlistsLoaded ? <button onClick={handlePlaylists} className='Action-button'>Fetch Playlists</button> : null}
+                {playlistsLoaded ? <button onClick={shufflePlaylist} className='Action-button'>Create TrueShuffle!</button> : null}
+            </div>
         )
     }
 }
@@ -70,12 +75,14 @@ async function loadProfile() {
     let profile = await fetchProfile(accessToken);
 
     // loop until we have a profile
-    console.log(profile);
     while (!profile.display_name) {
         redirectToAuthCodeFlow(clientId);
         accessToken = await getAccessToken(clientId, code);
         profile = await fetchProfile();
     }
+
+    localStorage.setItem("user_id", profile.id);
+
     populateUI(profile);
 }
 
@@ -91,7 +98,7 @@ async function redirectToAuthCodeFlow(clientId) {
     params.append("client_id", clientId);
     params.append("response_type", "code");
     params.append("redirect_uri", "http://localhost:3000/callback");
-    params.append("scope", "user-read-private user-read-email");
+    params.append("scope", "user-read-private user-read-email playlist-read-private playlist-modify-public playlist-modify-private");
     params.append("code_challenge_method", "S256");
     params.append("code_challenge", challenge);
 
@@ -165,8 +172,6 @@ async function fetchProfile() {
 // Function to fetch the user's playlists
 async function fetchPlaylists() {
 
-    
-
     // get the user's playlists
     const token = localStorage.getItem("token");
     const result = await fetch("https://api.spotify.com/v1/me/playlists", {
@@ -179,6 +184,8 @@ async function fetchPlaylists() {
     for (let playlist of playlistsObject.items) {
         playlists.push([playlist.name, playlist.id]);
     }
+
+    console.log(playlists);
 
     const playlistContainer = document.getElementById('playlists');
     playlistContainer.innerHTML = '';
@@ -194,7 +201,8 @@ async function fetchPlaylists() {
         radioButton.setAttribute('name', 'playlist');
         radioButton.setAttribute('value', playlist[0]);
         radioButton.setAttribute('id', `playlist-${playlist[0]}`);
-
+        radioButton.setAttribute('data-id', playlist[1]);
+        radioButton.className = 'Playlist-radio';
         // Create a label for the radio button
         const label = document.createElement('label');
         label.setAttribute('for', `playlist-${playlist[0]}`);
@@ -209,6 +217,74 @@ async function fetchPlaylists() {
     });
 }
 
+async function shufflePlaylist() {
+    const token = localStorage.getItem("token");
+    const user_id = localStorage.getItem("user_id").replace(/"/g, '');
+    console.log(user_id);
+    const selectedPlaylist = document.querySelector('input[name="playlist"]:checked');
+    const playlistId = selectedPlaylist.getAttribute('data-id');
+    const playlistName = selectedPlaylist.value;
+    const trackUris = [];
+
+    // get the number of tracks in the playlist
+    const getPlayListDetails = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}`, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` }
+    });
+
+    const playListDetails = await getPlayListDetails.json();
+    const trackCount = playListDetails.tracks.total;
+    console.log(trackCount);
+
+    for (let i = 0; i < trackCount; i += 100) {
+        const result = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks?offset=${i}`, {
+            method: "GET", headers: { Authorization: `Bearer ${token}` }
+        });
+        const playlistObject = await result.json();
+        const tracks = playlistObject.items;
+        const currentTrackUris = tracks.map(track => track.track.uri);
+        trackUris.push(...currentTrackUris);
+    }
+
+    
+    console.log(trackUris);
+
+    const shuffledUris = shuffle(trackUris);
+    console.log(shuffledUris);
+
+    
+
+
+    const newPlaylist = await fetch(`https://api.spotify.com/v1/users/${localStorage.getItem("user_id")}/playlists`, {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            name: `${playlistName} TrueShuffle`,
+            public: true,
+            description: `A shuffled version of ${playlistName}, created by TrueShuffle!`,
+        })
+    });
+
+    const newPlaylistObject = await newPlaylist.json();
+    const newPlaylistId = newPlaylistObject.id;
+    console.log(newPlaylistId); 
+    console.log(shuffledUris.length);
+    for (let i = 0; i < shuffledUris.length; i += 100) {
+        const addTracks = await fetch(`https://api.spotify.com/v1/playlists/${newPlaylistId}/tracks`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+            body: JSON.stringify({ uris: shuffledUris.slice(i, i + 100) })
+        });
+        console.log(addTracks);
+
+        if (i + 100 < shuffledUris.length) { // Check to avoid unnecessary delay after the last request
+            await sleep(1000);
+        }
+    }
+}
 
 // Function to populate the UI with the user's profile information
 function populateUI(profile) {
@@ -217,16 +293,36 @@ function populateUI(profile) {
         if (profile.images[0]) {
             const profileImage = new Image(200, 200);
             profileImage.src = profile.images[0].url;
+            profileImage.alt = "Profile Image";
+            profileImage.classList.add('Avatar');
             document.getElementById("avatar").appendChild(profileImage);
-            document.getElementById("imgUrl").innerText = profile.images[0].url;
         }
-        document.getElementById("id").innerText = profile.id;
-        document.getElementById("email").innerText = profile.email;
-        document.getElementById("uri").innerText = profile.uri;
-        document.getElementById("uri").setAttribute("href", profile.external_urls.spotify);
-        document.getElementById("url").innerText = profile.href;
-        document.getElementById("url").setAttribute("href", profile.href);
+
     } catch (error) {
         console.error("Error populating UI:", error);
     }
+}
+
+
+// Function to shuffle an array
+function shuffle(array) {
+    let currentIndex = array.length, randomIndex;
+
+    // While there remain elements to shuffle...
+    while (currentIndex !== 0) {
+
+        // Pick a remaining element...
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+
+        // And swap it with the current element.
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+    }
+
+    return array;
+}
+
+// Sleep function
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }

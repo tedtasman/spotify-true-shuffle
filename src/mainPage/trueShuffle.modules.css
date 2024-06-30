@@ -2,17 +2,18 @@
 
 .Container {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: left;
+    flex-direction: column;
+    justify-content: start;
     align-items: start;
-    background-color: #363636;
+    background-color: #474747;
     width: 100%;
     height: 100vh;
+    gap: 2vh;
 }
 
 h1 {
-    font-size: calc(10px + 4vmin);
-    color: white;
+    font-size: calc(10px + 3vmin);
+    color:#a2d5f5;
     font-family: 'Raleway', sans-serif;
     font-weight: 700;
     margin: 0;
@@ -33,8 +34,127 @@ h2 {
     align-items: start;
     gap: 1vh;
     width: 100%;
-    height: 100vh;
-    padding: 3vw;
+    height: auto;
+    padding: 3vh;
     background-color: #2e2e2e;
     max-height: 10vh;
+}
+
+.Profile {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1vh;
+    width: 40vw;
+    height: auto;
+    padding: 2vh 3vh;
+    background-color: #363636;
+    border-radius: 1vw;
+    transition: box-shadow 0.3s ease;
+}
+
+.Profile:hover {
+    box-shadow: #678599 0 0 10px;
+}
+
+.Avatar {
+    width: 7vh;
+    height: 7vh;
+    border-radius: 50%;
+}
+
+.Body-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: center;
+    gap: 2vh;
+    width: 100%;
+    height: 100vh;
+    padding: 3vh;
+    background-color: #474747;
+}
+
+.Playlists-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: start;
+    gap: 1vh;
+    width: 40vw;
+    max-height: 50vh;
+    background-color: #363636;
+    padding: 3vh;
+    border-radius: 1vw;
+    transition: box-shadow 0.3s ease;
+}
+
+.Playlists-container:hover {
+    box-shadow: #678599 0 0 10px;
+}
+
+
+.Playlists-list {
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: stretch;
+    overflow-y: scroll;
+    gap: 0.2em;
+    color: #bdbdbd;
+    list-style-type: none;
+    width: 40vw;
+    padding: 2em 0;
+    border: #2e2e2e solid 5px;
+    border-radius: 1vw;
+    align-self: center;
+}
+
+.Playlist-radio {
+    display: none;
+}
+
+
+.Playlists-list label {
+    cursor: pointer;
+    border-radius: 0.5vw;
+    padding: 0.5em;
+    margin: 0 1.5em;
+    width: calc(40vw - 4em);
+    transition: background-color 0.3s ease;
+    display: inline-block;
+}
+
+.Playlists-list label:hover {
+    background-color: #b0c9d9; /* Change as needed */
+    color: #363636; /* Change as needed */
+}
+
+
+.Playlist-radio:checked + label {
+    background-color: #a2d5f5; /* Change as needed */
+    color: #363636; /* Change as needed */
+}
+
+.Action-button {
+    background: rgb(85,146,185);
+    background: linear-gradient(75deg, rgba(85,146,185,1) 0%, rgba(188,229,255,1) 59%, rgba(118,177,214,1) 100%);   
+    border: none;
+    border-radius: 1vw;
+    padding: 1vw;
+    color: #363636;
+    font-size: calc(10px + 2vmin);
+    font-family: 'Raleway', sans-serif;
+    font-weight: 700;
+    margin: 0;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    box-shadow: black 0 0 6px;
+    margin: 0 2vh;
+}
+
+.Action-button:hover {
+    box-shadow: #678599 0 0 10px;
+    scale: 1.03;
 }
