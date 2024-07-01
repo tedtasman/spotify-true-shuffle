@@ -6,8 +6,6 @@ const params = new URLSearchParams(window.location.search);
 const code = params.get("code");
 
 
-
-
 export default function Connect() {
     // state to track if the user has clicked the "Begin" button
     const [active, setActive] = useState(false);
@@ -32,8 +30,8 @@ export default function Connect() {
                 <ul className='Tip-list'>
                     <li>Click the "Authenticate" button to log in to Spotify</li>
                     <li>You will be redirected to a secure Spotify login page</li>
-                    <li>After logging in, you will be redirected back to TrueShuffle</li>
-                    <li>Don't worry, TrueShuffle does not save any of your data</li>
+                    <li>After logging in, you will be redirected back to ShuffleTrue</li>
+                    <li>Don't worry, ShuffleTrue does not save any of your data</li>
                 </ul>
             </div>
         )
@@ -45,8 +43,8 @@ export default function Connect() {
             <div className='Authenticate-container'>
                 <button onClick={handleBegin} className='Action-button'>Begin</button>
                 <ul className='Tip-list'>
-                    <li>Click the "Begin" button to get started with TrueShuffle</li>
-                    <li>TrueShuffle will fetch your Spotify profile information</li>
+                    <li>Click the "Begin" button to get started with ShuffleTrue</li>
+                    <li>ShuffleTrue will fetch your Spotify profile information</li>
                 </ul>
             </div>
         )
@@ -67,7 +65,7 @@ export default function Connect() {
                 </div>
                 : null}
                 {!playlistsLoaded ? <button onClick={handlePlaylists} className='Action-button'>Fetch Playlists</button> : null}
-                {playlistsLoaded ? <button onClick={shufflePlaylist} className='Action-button'>Create TrueShuffle!</button> : null}
+                {playlistsLoaded ? <button onClick={shufflePlaylist} className='Action-button'>Create ShuffleTrue!</button> : null}
                 <div className='Log' id='log'></div>
             </div>
         )
@@ -266,6 +264,7 @@ async function shufflePlaylist() {
     const trackCount = playListDetails.tracks.total;
     console.log(trackCount);
 
+    // get the track URIs
     for (let i = 0; i < trackCount; i += 100) {
         const result = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks?offset=${i}`, {
             method: "GET", headers: { Authorization: `Bearer ${token}` }
@@ -276,15 +275,10 @@ async function shufflePlaylist() {
         trackUris.push(...currentTrackUris);
     }
 
-    
-    console.log(trackUris);
-
+    // shuffle the track URIs
     const shuffledUris = shuffle(trackUris);
-    console.log(shuffledUris);
 
-    
-
-
+    // create a new playlist
     const newPlaylist = await fetch(`https://api.spotify.com/v1/users/${localStorage.getItem("user_id")}/playlists`, {
         method: "POST",
         headers: {
@@ -292,12 +286,13 @@ async function shufflePlaylist() {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
-            name: `${playlistName} TrueShuffle`,
+            name: `${playlistName} ShuffleTrue`,
             public: true,
-            description: `A shuffled version of ${playlistName}, created by TrueShuffle!`,
+            description: `A shuffled version of ${playlistName}, created by ShuffleTrue!`,
         })
     });
 
+    // add the shuffled tracks to the new playlist
     const newPlaylistObject = await newPlaylist.json();
     const newPlaylistId = newPlaylistObject.id;
     console.log(newPlaylistId); 
@@ -311,7 +306,7 @@ async function shufflePlaylist() {
         console.log(addTracks);
 
         if (i + 100 < shuffledUris.length) { // Check to avoid unnecessary delay after the last request
-            await sleep(1000);
+            await sleep(1000); // Sleep for 1 second to avoid rate limiting
         }
     }
 
@@ -341,10 +336,10 @@ function populateUI(profile) {
 function shuffle(array) {
     let currentIndex = array.length, randomIndex;
 
-    // While there remain elements to shuffle...
+    // While there remain elements to shuffle
     while (currentIndex !== 0) {
 
-        // Pick a remaining element...
+        // Pick a remaining element
         randomIndex = Math.floor(Math.random() * currentIndex);
         currentIndex--;
 
