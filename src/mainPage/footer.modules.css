@@ -1,0 +1,52 @@
+@import url('https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap');
+
+.Footer {
+    height: 10vh;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    background-color: #2e2e2e;
+    color: #dddddd;
+    font-size: calc(10px + 1vmin);
+  }
+  
+  .Footer-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    width: auto;
+    font-family: monospace;
+    margin: 3vw;
+  }
+  
+  .Footer-section {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 2em;
+    font-weight: bold;
+    width: auto;
+  }
+  
+  .Footer-button {
+    background-color: transparent;
+    color: #bbbbbb;
+    font-family: 'Raleway', sans-serif;
+    font-size: calc(10px + 1vmin);
+    font-weight: normal;
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+  
+  .Footer-button:hover {
+    color: #fff;
+    text-decoration: underline;
+  }
+  
+  .Footer-bar {
+    width: 2px;
+    height: 2vh;
+    background: linear-gradient(0deg, transparent 0%, white 5%, white 95%, transparent 100%);
+  }
