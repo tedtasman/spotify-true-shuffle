@@ -46,7 +46,6 @@ Spotify utilizes an algorithmic shuffling system which leads to the user hearing
 - React
 - Spotify Web API
 - Node.js
-- Express
 
 ### Contributing
 Contributions are welcome! Please open an issue or submit a pull request for any changes.
