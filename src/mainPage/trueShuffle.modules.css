@@ -3,11 +3,11 @@
 .Container {
     display: flex;
     flex-direction: column;
-    justify-content: start;
-    align-items: start;
+    justify-content: center;
+    align-items: center;
     background-color: #474747;
     width: 100%;
-    height: 100vh;
+    height: 82vh;
     gap: 2vh;
 }
 
@@ -27,6 +27,42 @@ h2 {
     margin: 0;
 }
 
+.Authenticate-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1vh;
+    width: auto;
+    height: auto;
+    padding: 3vh;
+    background-color: #363636;
+    border-radius: 1vw;
+    transition: box-shadow 0.3s ease;
+}
+
+.Authenticate-container:hover {
+    box-shadow: #678599 0 0 10px;
+}
+
+.Tip-list {
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: start;
+    gap: 1vh;
+    padding-left: 3vh;
+
+}
+
+.Tip-list li {
+    font-size: calc(10px + 1vmin);
+    color: #bdbdbd;
+    font-family: 'Raleway', sans-serif;
+    font-weight: 500;
+    margin: 0;
+}
+
 .Intro-container {
     display: flex;
     flex-direction: column;
@@ -34,10 +70,9 @@ h2 {
     align-items: start;
     gap: 1vh;
     width: 100%;
-    height: auto;
+    height: 12vh;
     padding: 3vh;
     background-color: #2e2e2e;
-    max-height: 10vh;
 }
 
 .Profile {
@@ -83,7 +118,7 @@ h2 {
     align-items: start;
     gap: 1vh;
     width: 40vw;
-    max-height: 50vh;
+    max-height: 40vh;
     background-color: #363636;
     padding: 3vh;
     border-radius: 1vw;
@@ -157,4 +192,10 @@ h2 {
 .Action-button:hover {
     box-shadow: #678599 0 0 10px;
     scale: 1.03;
+}
+
+.Log {
+    font-family: monospace;
+    font-size: calc(5px + 1vmin);
+    color: #bcdef5;
 }

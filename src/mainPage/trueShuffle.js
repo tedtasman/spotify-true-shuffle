@@ -5,8 +5,8 @@ import Connect from './connect.js'
 export default function TrueShuffle() {
     return (
         <>
+            <Intro />
             <div className='Container'>
-                <Intro />
                 <Connect />
             </div>
         </>

@@ -26,12 +26,30 @@ export default function Connect() {
 
     // render the authentication button if there is no code in the URL
     if (!code) {
-        return (<button onClick={authenticate} className='Action-button'>Authenticate</button>)
+        return (
+            <div className='Authenticate-container'>
+                <button onClick={authenticate} className='Action-button'>Authenticate</button>
+                <ul className='Tip-list'>
+                    <li>Click the "Authenticate" button to log in to Spotify</li>
+                    <li>You will be redirected to a secure Spotify login page</li>
+                    <li>After logging in, you will be redirected back to TrueShuffle</li>
+                    <li>Don't worry, TrueShuffle does not save any of your data</li>
+                </ul>
+            </div>
+        )
     }
 
     // render the "Begin" button if there is a code in the URL but the user has not clicked "Begin"
     else if (!active) {
-        return (<button onClick={handleBegin} className='Action-button'>Begin</button>)
+        return (
+            <div className='Authenticate-container'>
+                <button onClick={handleBegin} className='Action-button'>Begin</button>
+                <ul className='Tip-list'>
+                    <li>Click the "Begin" button to get started with TrueShuffle</li>
+                    <li>TrueShuffle will fetch your Spotify profile information</li>
+                </ul>
+            </div>
+        )
     }
 
     // render the profile information if the user has clicked "Begin"
@@ -50,6 +68,7 @@ export default function Connect() {
                 : null}
                 {!playlistsLoaded ? <button onClick={handlePlaylists} className='Action-button'>Fetch Playlists</button> : null}
                 {playlistsLoaded ? <button onClick={shufflePlaylist} className='Action-button'>Create TrueShuffle!</button> : null}
+                <div className='Log' id='log'></div>
             </div>
         )
     }
@@ -203,6 +222,7 @@ async function fetchPlaylists() {
         radioButton.setAttribute('id', `playlist-${playlist[0]}`);
         radioButton.setAttribute('data-id', playlist[1]);
         radioButton.className = 'Playlist-radio';
+        radioButton.addEventListener('click', handleSelectPlaylist);
         // Create a label for the radio button
         const label = document.createElement('label');
         label.setAttribute('for', `playlist-${playlist[0]}`);
@@ -217,11 +237,21 @@ async function fetchPlaylists() {
     });
 }
 
+
+function handleSelectPlaylist() {
+    document.getElementById('log').innerHTML = '';
+}
+
 async function shufflePlaylist() {
+    document.getElementById('log').innerHTML = 'Shuffling...';
     const token = localStorage.getItem("token");
     const user_id = localStorage.getItem("user_id").replace(/"/g, '');
     console.log(user_id);
     const selectedPlaylist = document.querySelector('input[name="playlist"]:checked');
+    if (!selectedPlaylist) {
+        document.getElementById('log').innerHTML = 'Please select a playlist to shuffle.';
+        return;
+    }
     const playlistId = selectedPlaylist.getAttribute('data-id');
     const playlistName = selectedPlaylist.value;
     const trackUris = [];
@@ -284,6 +314,9 @@ async function shufflePlaylist() {
             await sleep(1000);
         }
     }
+
+    document.getElementById('log').innerHTML = 'Playlist created! Check your Spotify account for the new playlist.';
+
 }
 
 // Function to populate the UI with the user's profile information
