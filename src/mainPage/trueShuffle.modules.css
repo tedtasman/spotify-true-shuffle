@@ -162,14 +162,14 @@ h2 {
 }
 
 .Playlists-list label:hover {
-    background-color: #b0c9d9; /* Change as needed */
-    color: #363636; /* Change as needed */
+    background-color: #b0c9d9;
+    color: #363636;
 }
 
 
 .Playlist-radio:checked + label {
-    background-color: #a2d5f5; /* Change as needed */
-    color: #363636; /* Change as needed */
+    background-color: #a2d5f5;
+    color: #363636;
 }
 
 .Action-button {
