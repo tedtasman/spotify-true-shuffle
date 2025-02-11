@@ -6,11 +6,11 @@ import Footer from './footer.js'
 export default function TrueShuffle() {
     return (
         <>
-            <Intro />
             <div className='Container'>
+                <Intro />
                 <Connect />
+                <Footer />
             </div>
-            <Footer />
         </>
     )    
 }

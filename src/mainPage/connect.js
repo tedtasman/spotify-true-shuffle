@@ -55,12 +55,19 @@ export default function Connect() {
         return (
             <div className='Body-container'>
                 <div id="profileInfo" className='Profile'>
-                    <h2>Logged in as <span id="displayName" style={{color:'#a2d5f5'}}></span></h2>
+                    <h2 id="displayName">Logged in as</h2>
                     <span id="avatar" className='.Avatar'></span>
                 </div>
                 {playlistsLoaded ? 
                 <div className='Playlists-container'>
                     <h2>Select a playlist to shuffle:</h2>
+                    <p>Press the ↗ button next to any playlist to view it on Spotify</p>
+                    <p>
+                        Playlists provided by
+                        <a href="https://www.spotify.com" target="_blank">
+                            <img src="https://www.scdn.co/i/_global/open-graph-default.png" alt="Spotify Logo" />
+                        </a>
+                    </p>
                     <ul id="playlists" className='Playlists-list'></ul>
                 </div>
                 : null}
@@ -221,14 +228,23 @@ async function fetchPlaylists() {
         radioButton.setAttribute('data-id', playlist[1]);
         radioButton.className = 'Playlist-radio';
         radioButton.addEventListener('click', handleSelectPlaylist);
+
         // Create a label for the radio button
         const label = document.createElement('label');
         label.setAttribute('for', `playlist-${playlist[0]}`);
         label.textContent = playlist[0];
 
+        // Create a link to the playlist
+        const link = document.createElement('a');
+        link.href = `https://open.spotify.com/playlist/${playlist[1]}`;
+        link.target = "_blank";
+        link.textContent = "↗";
+
         // Append the radio button and label to the list item
         playlistEntry.appendChild(radioButton);
         playlistEntry.appendChild(label);
+        playlistEntry.appendChild(link);
+
 
         // Append the list item to the playlist container
         playlistContainer.appendChild(playlistEntry);
@@ -310,14 +326,16 @@ async function shufflePlaylist() {
         }
     }
 
-    document.getElementById('log').innerHTML = 'Playlist created! Check your Spotify account for the new playlist.';
+    document.getElementById('log').innerHTML = `<a href="https://open.spotify.com/playlist/${newPlaylistId}" target="_blank">Playlist created! Click here to view it on Spotify.</a>`;
 
 }
 
 // Function to populate the UI with the user's profile information
 function populateUI(profile) {
     try {
-        document.getElementById("displayName").innerText = profile.display_name;
+        document.getElementById("displayName").innerHTML = 
+        `Logged in as <a href="https://open.spotify.com/user/${profile.display_name}" target="_blank">${profile.display_name}</a>`;
+
         if (profile.images[0]) {
             const profileImage = new Image(200, 200);
             profileImage.src = profile.images[0].url;

@@ -3,7 +3,9 @@ import TrueShuffle from './mainPage/trueShuffle.js'
 
 function App() {
   return (
-    <TrueShuffle />
+    <>
+      <TrueShuffle />
+    </>
   );
 }
 

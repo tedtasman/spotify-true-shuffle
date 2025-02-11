@@ -1,14 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap');
 
 .Footer {
-    height: 10vh;
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     justify-content: center;
+    width: 100%;
     align-items: center;
     background-color: #2e2e2e;
     color: #dddddd;
     font-size: calc(10px + 1vmin);
+    gap: 3em;
+    padding: 5em 0;
   }
   
   .Footer-container {
@@ -17,7 +19,6 @@
     justify-content: center;
     width: auto;
     font-family: monospace;
-    margin: 3vw;
   }
   
   .Footer-section {
